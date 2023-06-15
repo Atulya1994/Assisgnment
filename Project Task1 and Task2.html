@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Geolocation and Push Notification Opt-in</title>
+  <script>
+    function handleLocationOptIn() {
+      if ("geolocation" in navigator) {
+        navigator.geolocation.getCurrentPosition(
+          function(position) {
+            // Save the user's location in local storage
+            localStorage.setItem("geo_location", JSON.stringify(position.coords));
+            
+            // Disable the button after click
+            var button = document.getElementById("optInButton");
+            button.disabled = true;
+            
+            // Change the text with the value of geo_location
+            button.textContent = "Location: " + JSON.stringify(position.coords);
+            
+            // Check if 10 seconds have passed and ask for push notification permission
+            setTimeout(function() {
+              if (Notification.permission !== "granted") {
+                Notification.requestPermission().then(function(permission) {
+                  // Save the user's push notification permission in session storage
+                  sessionStorage.setItem("location_permission", permission);
+                });
+              }
+            }, 10000);
+          },
+          function(error) {
+            if (error.code === error.PERMISSION_DENIED) {
+              // Save "blocked" in local storage if user blocks geolocation
+              localStorage.setItem("geo_location", "blocked");
+              
+              // Disable the button after click
+              var button = document.getElementById("optInButton");
+              button.disabled = true;
+              
+              // Change the text with "blocked"
+              button.textContent = "Location: blocked";
+            }
+          }
+        );
+      } else {
+        alert("Geolocation is not supported by this browser.");
+      }
+    }
+  </script>
+</head>
+<body>
+  <button id="optInButton" onclick="handleLocationOptIn()">Location Opt In</button>
+</body>
+</html>
